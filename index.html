@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>衣生 RevBox - 综合社交改造平台</title>
+  <style>
+    :root{
+      --dark-blue:#28437d; --mid-blue:#4675b0; --light-blue:#6892c5;
+      --soft-purple:#e7e4f8; --soft-pink:#f4dced; --rose:#d2798c; --red:#b34557;
+      --white:#fff; --grey:#f0f2f5; --text:#28437d;
+      --shadow:0 10px 30px rgba(0,0,0,.08);
+      --shadow-sm:0 4px 15px rgba(0,0,0,.06);
+      --radius-xl:28px; --radius-lg:20px; --radius-md:14px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"PingFang SC","Hiragino Sans GB",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+    body{background:#f8f9fa;color:var(--text);}
+
+    nav{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:15px 5%;background:var(--white);position:sticky;top:0;z-index:1000;
+      box-shadow:0 2px 10px rgba(0,0,0,0.05);
+      gap:16px;flex-wrap:wrap;
+    }
+    .logo{font-weight:900; letter-spacing:.5px;}
+    .nav-links{display:flex;gap:36px;flex-wrap:wrap;}
+    .nav-links span{cursor:pointer;font-weight:700;color:var(--mid-blue);transition:.25s;}
+    .nav-links span:hover{color:var(--red);}
+    .btn-top{
+      background:var(--dark-blue);color:#fff;padding:8px 22px;border-radius:999px;border:none;cursor:pointer;
+      transition:.2s; font-weight:800;
+    }
+    .btn-top:hover{transform:translateY(-1px);filter:brightness(1.05);}
+
+    .side-toolbar{
+      position:fixed;right:18px;top:50%;transform:translateY(-50%);
+      display:flex;flex-direction:column;gap:12px;z-index:999;
+    }
+    .tool-item{
+      width:48px;height:48px;background:#fff;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);cursor:pointer;font-size:20px;transition:.25s;
+      user-select:none;
+      position:relative;
+    }
+    .tool-item:hover{transform:scale(1.08);background:var(--soft-pink);}
+    .tool-item .badge{
+      position:absolute;top:-4px;right:-4px;
+      background:var(--red);color:#fff;font-size:11px;font-weight:900;
+      width:20px;height:20px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 6px 14px rgba(179,69,87,.35);
+    }
+
+    .page{display:none;padding:26px 5%;animation:fadeIn .35s;}
+    .active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    .hero-banner{
+      background:linear-gradient(to right,var(--soft-purple),var(--soft-pink));
+      padding:56px;border-radius:var(--radius-xl);text-align:center;margin-bottom:26px;
+      box-shadow:var(--shadow-sm);
+    }
+    .hero-banner h1{font-size:36px;letter-spacing:.5px;}
+    .hero-banner p{margin:14px 0 0;color:#4b5f93;font-weight:700;}
+
+    .top-split{display:flex;gap:18px;margin-bottom:32px;flex-wrap:wrap;}
+    .split-card{
+      flex:1;min-width:280px;height:300px;border-radius:var(--radius-xl);
+      padding:36px;color:#fff;position:relative;cursor:pointer;transition:.25s;
+      background-size:cover;background-position:center;box-shadow:var(--shadow-sm); overflow:hidden;
+    }
+    .split-card::after{
+      content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.55));
+      pointer-events:none;
+    }
+    .split-card > *{position:relative;z-index:1;}
+    .split-card:hover{transform:scale(1.015);}
+    .box-l{background-image:url('./images/精准定向改造.jpg');}
+    .box-r{background-image:url('./images/灵感惊喜盲盒.jpg');}
+
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+    @media (max-width:1100px){.grid-4{grid-template-columns:repeat(3,1fr);}}
+    @media (max-width:820px){.grid-4{grid-template-columns:repeat(2,1fr);} .nav-links{gap:16px;}}
+    @media (max-width:520px){.grid-4{grid-template-columns:repeat(1,1fr);} .nav-links{gap:12px;}}
+    .card-4{
+      background:#fff;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm);
+      transition:.25s;cursor:pointer;position:relative;
+    }
+    .card-4:hover{transform:translateY(-6px);}
+    .card-img{width:100%;height:230px;background:#eee;background-size:cover;background-position:center;}
+    .card-body{padding:14px;}
+    .price-tag{color:var(--red);font-weight:900;font-size:18px;margin-top:10px;}
+
+    .step-bar{display:flex;justify-content:center;gap:36px;margin-bottom:34px;flex-wrap:wrap;}
+    .step{display:flex;flex-direction:column;align-items:center;color:#c8c8c8;font-weight:800;}
+    .step.done{color:var(--mid-blue);}
+    .step-num{
+      width:30px;height:30px;border:2px solid currentColor;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;margin-bottom:8px;
+    }
+    .upload-container{
+      background:#fff;border-radius:var(--radius-xl);padding:46px;text-align:center;border:2px dashed var(--light-blue);
+      box-shadow:var(--shadow-sm);
+    }
+    .mode-switch{display:flex;justify-content:center;gap:12px;margin-bottom:22px;flex-wrap:wrap;}
+    .m-btn{padding:10px 18px;border-radius:12px;border:1px solid var(--light-blue);cursor:pointer;font-weight:800;background:#fff;}
+    .m-btn.active{background:var(--mid-blue);color:#fff;border-color:transparent;}
+    .report-box{
+      display:none;background:#fff;border-radius:var(--radius-xl);padding:36px;margin-top:26px;box-shadow:var(--shadow);
+    }
+    .report-header{
+      display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;
+      padding-bottom:18px;margin-bottom:18px;gap:14px;flex-wrap:wrap;
+    }
+    .carbon-box{background:var(--soft-pink);padding:14px 22px;border-radius:15px;color:var(--red);font-weight:900;}
+
+    .designer-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+    @media (max-width:900px){.designer-grid{grid-template-columns:1fr;}}
+    .d-card{background:#fff;padding:22px;border-radius:var(--radius-xl);border:1px solid #eee;box-shadow:var(--shadow-sm);}
+    .d-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+    .d-avatar{width:55px;height:55px;border-radius:50%;background:var(--mid-blue);}
+    .d-portfolio{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+    .p-img{aspect-ratio:1;border-radius:12px;background:var(--grey);}
+
+    /* 个人中心 */
+    .profile-wrap{
+      background:#fff;border-radius:var(--radius-xl);box-shadow:var(--shadow);
+      padding:26px;display:grid;grid-template-columns:320px 1fr;gap:18px;
+    }
+    @media (max-width:900px){.profile-wrap{grid-template-columns:1fr;}}
+    .profile-card{
+      border:1px solid #eee;border-radius:var(--radius-xl);padding:20px;background:linear-gradient(135deg,var(--soft-purple),#fff);
+    }
+    .profile-avatar{
+      width:86px;height:86px;border-radius:50%;
+      background:linear-gradient(135deg,var(--mid-blue),var(--rose));
+      display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:900;
+      box-shadow:var(--shadow-sm);
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;background:var(--grey);font-weight:900;color:#415b9b;font-size:12px;
+    }
+    .pill.vip{
+      background:linear-gradient(135deg,#ffe6a7,#ffd36b);
+      color:#6a4b00;
+      box-shadow:0 10px 24px rgba(255,211,107,.25);
+    }
+    .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+    .stat{
+      background:#fff;border:1px solid #eee;border-radius:16px;padding:12px;text-align:center;
+    }
+    .stat strong{display:block;font-size:18px;}
+    .stat span{font-size:12px;color:#7888b2;font-weight:900;}
+    .profile-main{
+      border:1px solid #eee;border-radius:var(--radius-xl);padding:20px;background:#fff;
+    }
+    .profile-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+    .btn-soft{
+      border:none;cursor:pointer;border-radius:14px;padding:10px 14px;font-weight:900;
+      background:var(--grey);color:#2f4b8b;transition:.2s;
+    }
+    .btn-soft:hover{transform:translateY(-1px);filter:brightness(.98);}
+    .btn-danger{background:var(--soft-pink);color:var(--red);}
+    .btn-vip{
+      background:linear-gradient(135deg,#ffe6a7,#ffd36b);
+      color:#6a4b00;
+    }
+
+    /* 列表页容器 */
+    .panel{
+      background:#fff;border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);
+      border:1px solid #eee;padding:18px;
+    }
+    .panel h2{margin-bottom:8px;}
+    .panel p{color:#6d7db0;font-weight:800;line-height:1.8;margin-bottom:14px;}
+
+    /* 帖子详情 Modal */
+    .modal{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
+      z-index:2001;justify-content:center;align-content:center;padding:18px;
+    }
+    .modal-wrap{
+      width:min(980px,96vw);height:min(660px,92vh);
+      background:#fff;border-radius:24px;display:flex;overflow:hidden;position:relative;
+      box-shadow:0 30px 80px rgba(0,0,0,.35);
+    }
+    .modal-close{
+      position:absolute;top:14px;right:14px;z-index:3;
+      width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
+      background:rgba(255,255,255,.92);box-shadow:var(--shadow-sm);font-size:18px;
+    }
+    .modal-left{
+      width:52%;background:#111;position:relative;display:flex;align-items:center;justify-content:center;
+    }
+    @media (max-width:900px){
+      .modal-wrap{flex-direction:column;height:min(760px,92vh);}
+      .modal-left{width:100%;height:45%;}
+    }
+    .carousel-img{
+      width:100%;height:100%;background-size:cover;background-position:center;
+      transform:scale(1.02);
+    }
+    .carousel-nav{
+      position:absolute;inset:auto 14px 14px 14px;display:flex;justify-content:space-between;gap:10px;z-index:2;
+    }
+    .c-btn{
+      border:none;cursor:pointer;border-radius:14px;padding:10px 14px;font-weight:900;
+      background:rgba(255,255,255,.92);backdrop-filter:blur(6px);
+      transition:.2s;
+    }
+    .c-btn:hover{transform:translateY(-1px);}
+    .dots{display:flex;gap:6px;align-items:center;justify-content:center;flex:1;}
+    .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55);}
+    .dot.active{background:#fff;width:10px;height:10px;}
+
+    .modal-right{
+      width:48%;padding:18px 18px 14px 18px;display:flex;flex-direction:column;gap:12px;
+    }
+    @media (max-width:900px){.modal-right{width:100%;flex:1;}}
+    .post-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+    .post-user{display:flex;align-items:center;gap:10px;}
+    .mini-avatar{
+      width:36px;height:36px;border-radius:50%;
+      background:linear-gradient(135deg,var(--mid-blue),var(--rose));
+      display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;
+    }
+    .post-user b{display:block;}
+    .post-user small{color:#7a8ab8;font-weight:900;}
+    .tagline{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+    .tag{font-size:12px;font-weight:900;color:#8a3b55;background:var(--soft-pink);padding:6px 10px;border-radius:999px;}
+    .post-text{color:#2d437d;line-height:1.9;font-weight:800;font-size:14px;}
+
+    .post-actions{
+      display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;
+      border-top:1px solid #eee;padding-top:10px;
+    }
+    .act{
+      flex:1;min-width:120px;
+      border:1px solid #e9e9ef;background:#fff;border-radius:14px;
+      padding:10px 12px;cursor:pointer;font-weight:900;color:#2f4b8b;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      transition:.2s;
+    }
+    .act:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+    .act.active{background:linear-gradient(135deg,var(--soft-purple),#fff);border-color:#dfe3f5;}
+    .act.danger{color:var(--red);}
+
+    .comments{
+      margin-top:4px;flex:1;overflow:auto;border:1px solid #eee;border-radius:16px;padding:12px;background:#fafbff;
+    }
+    .cmt{padding:10px;border-radius:14px;background:#fff;border:1px solid #eef0f7;margin-bottom:10px;}
+    .cmt b{font-size:13px;}
+    .cmt p{margin-top:6px;color:#3a4f88;font-weight:800;font-size:13px;line-height:1.7;}
+    .comment-bar{
+      display:flex;gap:10px;margin-top:8px;
+    }
+    .comment-bar input{
+      flex:1;border:1px solid #e3e6f2;border-radius:14px;padding:12px 12px;font-weight:900;
+      outline:none;
+    }
+    .comment-bar button{
+      border:none;border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:900;
+      background:var(--mid-blue);color:#fff;
+    }
+
+    /* 私信/群聊 UI */
+    .split-2{display:grid;grid-template-columns:340px 1fr;gap:16px;}
+    @media (max-width:900px){.split-2{grid-template-columns:1fr;}}
+    .list{
+      border:1px solid #eee;border-radius:22px;overflow:hidden;background:#fff;
+      box-shadow:var(--shadow-sm);
+    }
+    .list .item{
+      padding:14px 14px;border-bottom:1px solid #f0f0f6;cursor:pointer;
+      display:flex;gap:12px;align-items:center;
+      transition:.2s;
+    }
+    .list .item:hover{background:#fafbff;}
+    .list .item:last-child{border-bottom:none;}
+    .chat{
+      border:1px solid #eee;border-radius:22px;background:#fff;box-shadow:var(--shadow-sm);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    .chat-head{
+      padding:14px;border-bottom:1px solid #f0f0f6;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+      background:linear-gradient(135deg,var(--soft-purple),#fff);
+    }
+    .chat-body{padding:14px;flex:1;overflow:auto;background:#fbfcff;}
+    .bubble{
+      max-width:78%;padding:10px 12px;border-radius:16px;margin-bottom:10px;font-weight:800;line-height:1.7;
+      border:1px solid #eef0f7;background:#fff;
+    }
+    .bubble.me{margin-left:auto;background:linear-gradient(135deg,var(--soft-purple),#fff);border-color:#dfe3f5;}
+    .chat-bar{display:flex;gap:10px;padding:12px;border-top:1px solid #f0f0f6;background:#fff;}
+    .chat-bar input{flex:1;border:1px solid #e3e6f2;border-radius:14px;padding:12px;font-weight:900;outline:none;}
+    .chat-bar button{border:none;border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:900;background:var(--mid-blue);color:#fff;}
+
+    footer{
+      background:#1a1a1a;color:#fff;padding:60px 5%;margin-top:60px;
+      display:grid;grid-template-columns:repeat(4,1fr);gap:40px;
+    }
+    @media (max-width:900px){footer{grid-template-columns:repeat(2,1fr);}}
+    @media (max-width:520px){footer{grid-template-columns:1fr;}}
+    footer h4{margin-bottom:20px;color:var(--light-blue);}
+    footer p{font-size:14px;color:#999;line-height:2;cursor:pointer;}
+  </style>
+</head>
+<body>
+
+  <!-- 右侧工具栏：点击进入页面 -->
+  <div class="side-toolbar">
+    <div class="tool-item" title="收藏" onclick="openCollectionPage()">⭐</div>
+    <div class="tool-item" title="浏览历史" onclick="openHistoryPage()">🕒</div>
+    <div class="tool-item" title="私信" onclick="openDMPage()">💬 <div class="badge" id="dmBadge" style="display:none;">0</div></div>
+    <div class="tool-item" title="转发" onclick="openSharePage()">🔄</div>
+    <div class="tool-item" title="群聊" onclick="openGroupPage()" style="background:var(--red); color:white;">👥 <div class="badge" id="groupBadge" style="display:none;background:#fff;color:var(--red);">0</div></div>
+  </div>
+
+  <nav>
+    <div class="logo">衣生 RevBox</div>
+    <div class="nav-links">
+      <span onclick="switchPage('home')">首页</span>
+      <span onclick="switchPage('upload')">回收/改造下单</span>
+      <span onclick="switchPage('doll')">娃衣专区</span>
+      <span onclick="switchPage('beans')">环保豆专区</span>
+      <span onclick="switchPage('community')">改造社区</span>
+      <span onclick="switchPage('designers')">入驻设计师</span>
+    </div>
+    <button class="btn-top" onclick="switchPage('profile')">个人中心</button>
+  </nav>
+
+  <!-- 首页 -->
+  <div id="home" class="page active">
+    <div class="hero-banner">
+      <h1>让每件旧衣，都有新故事</h1>
+      <p>双碳驱动 · 消费降级也能精致生活 · AI智能识别 · 专业设计师定制 · 环保可持续</p>
+      <button class="btn-top" style="padding:12px 40px;margin-top:18px;" onclick="switchPage('upload')">开启改造之旅 →</button>
+    </div>
+
+    <div class="top-split">
+      <div class="split-card box-l" onclick="switchPage('upload')">
+        <h2>精准定向改造</h2>
+        <p style="margin-top:8px;font-weight:800;">上传图片，AI 生成预览方案</p>
+        <button class="btn-top" style="margin-top:18px;">立即开始</button>
+      </div>
+      <div class="split-card box-r" onclick="switchPage('upload')">
+        <h2>惊喜灵感盲盒</h2>
+        <p style="margin-top:8px;font-weight:800;">全权交给设计师，期待开箱瞬间</p>
+        <button class="btn-top" style="margin-top:18px;">开启盲盒</button>
+      </div>
+    </div>
+
+    <h3>精选改造案例</h3>
+    <div class="grid-4" style="margin-top:18px;" id="caseGrid"></div>
+  </div>
+
+  <!-- 上传页 -->
+  <div id="upload" class="page">
+    <div class="step-bar">
+      <div class="step done"><div class="step-num">1</div>上传</div>
+      <div class="step"><div class="step-num">2</div>AI分析</div>
+      <div class="step"><div class="step-num">3</div>方案推荐</div>
+      <div class="step"><div class="step-num">4</div>确认支付</div>
+    </div>
+
+    <div class="upload-container">
+      <h3>回收 / 改造 下单</h3>
+      <div class="mode-switch">
+        <div class="m-btn active" id="orderRemakeBtn" onclick="setOrderMode('remake', this)">✨ 改造下单（情感/贵价衣物）</div>
+        <div class="m-btn" id="orderRecycleBtn" onclick="setOrderMode('recycle', this)">♻️ 回收下单（低价/破损衣物）</div>
+      </div>
+      
+      <!-- 回收下单 -->
+      <div id="recycleBox" style="display:none;margin:18px auto 0;max-width:900px;text-align:left;">
+        <div style="background:#fafbff;border:1px solid #e8ebf6;border-radius:20px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:center;">
+          <div>
+            <h4 style="margin-bottom:8px;">回收规则（不分品牌，按重量计价）</h4>
+            <p style="color:#6d7db0;font-weight:900;line-height:1.8;margin-bottom:10px;">
+              现金返现 <b style="color:var(--red);">0.6元/公斤</b> + 环保豆奖励 <b style="color:var(--red);">20豆/公斤</b>（<b>50豆=1元</b>）。
+              回收衣物将进行降解/再造，后续会上架到「环保豆专区」供兑换或购买。
+            </p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <span class="tag">首次回收 +100豆</span>
+              <span class="tag">满5公斤 +50豆</span>
+              <span class="tag">邀请好友 +30豆</span>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #eee;border-radius:18px;padding:14px;">
+            <div style="font-weight:900;margin-bottom:10px;">填写回收重量（公斤）</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <input id="recycleKg" type="number" min="0" step="0.1" value="5" style="flex:1;border:1px solid #e3e6f2;border-radius:14px;padding:12px;font-weight:900;outline:none;" />
+              <button class="btn-top" onclick="calcRecycle()">计算</button>
+            </div>
+            <div style="margin-top:12px;color:#2f4b8b;font-weight:900;line-height:1.9;">
+              预计返现：<span id="recycleCash" style="color:var(--red);">¥ 3.0</span><br/>
+              预计获得环保豆：<span id="recycleBeans" style="color:var(--red);">150</span>
+              <small style="display:block;color:#6d7db0;font-weight:900;margin-top:6px;">* 已含“满5公斤 +50豆”计算；真实规则可按活动调整。</small>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+              <button class="btn-soft" onclick="placeRecycleOrder()">提交回收订单</button>
+              <button class="btn-soft btn-vip" onclick="addBeans('回收下单', 20)">立即获得20豆</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 改造下单 -->
+      <div id="remakeBox">
+<div style="padding: 58px; background:#fcfcff; border-radius:20px; cursor:pointer;" onclick="runAI()">
+        <p style="font-size:50px;">☁️</p>
+        <p style="font-weight:800;">点击或拖拽照片至此，AI将自动评估面料与减碳量</p>
+        <p id="loading-txt" style="display:none; color:var(--mid-blue); margin-top:18px; font-weight:900;">AI 正在分析纤维密度与磨损情况...</p>
+            </div>
+</div>
+    </div>
+
+    <div class="report-box" id="aiReport">
+      <div class="report-header">
+        <div>
+          <h2>AI 识别分析报告</h2>
+          <p style="margin-top:6px;color:#6b7cab;font-weight:900;">基于深度学习的面料评估</p>
+        </div>
+        <div class="carbon-box">🌱 节省碳排放：2.45kg</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+        <div>
+          <p style="font-weight:900;">面料成分：Cotton 85% / Polyester 15%</p>
+          <div style="background:#eee; height:8px; border-radius:4px; margin:10px 0; overflow:hidden;">
+            <div style="width:85%; height:100%; background:var(--mid-blue); border-radius:4px;"></div>
+          </div>
+          <p style="font-size:14px; margin-top:12px; color:#405a99; font-weight:900; line-height:1.8;">
+            AI 评估：面料韧性良好，适合改造为包袋或家居饰品。
+          </p>
+        </div>
+        <div style="background:var(--grey); padding:18px; border-radius:15px;">
+          <h4>色彩方案建议</h4>
+          <div style="display:flex; gap:10px; margin-top:10px;">
+            <div style="width:30px; height:30px; background:#28437d; border-radius:50%;"></div>
+            <div style="width:30px; height:30px; background:#a6badf; border-radius:50%;"></div>
+            <div style="width:30px; height:30px; background:#f1ccde; border-radius:50%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin: 26px 0 16px;">为您推荐的改造方案</h3>
+      <div class="grid-4">
+        <div class="card-4"><div class="card-img" style="background-image:url('./images/简约托特包.png');"></div><div class="card-body"><b>简约托特包（S档·牛仔）</b><br><span class="price-tag">¥ 167</span></div></div>
+        <div class="card-4"><div class="card-img" style="background-image:url('./images/拼布抱枕套.png');"></div><div class="card-body"><b>拼布抱枕套（B档·棉）</b><br><span class="price-tag">¥ 69</span></div></div>
+        <div class="card-4"><div class="card-img" style="background-image:url('./images/宠物围兜.png');"></div><div class="card-body"><b>宠物围兜（B档·棉）</b><br><span class="price-tag">¥ 69</span></div></div>
+        <div class="card-4"><div class="card-img" style="background-image:url('./images/复古束发带.png');"></div><div class="card-body"><b>复古束发带（配件·）</b><br><span class="price-tag">¥ 29</span></div></div>
+      
+    <div style="margin-top:18px;background:#fafbff;border:1px solid #eee;border-radius:18px;padding:14px;">
+      <b>盲盒选项</b>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+        <div class="pill" style="background:#fff;border:1px solid #eee;">🎁 普通盲盒：¥ 59（随机工艺）</div>
+        <div class="pill" style="background:#fff;border:1px solid #eee;">✨ 惊喜盲盒：¥ 79（可备注偏好）</div>
+        <div class="pill" style="background:#fff;border:1px solid #eee;">🌿 环保豆抵扣：最高 50%</div>
+      </div>
+      <p style="margin-top:10px;color:#6d7db0;font-weight:900;line-height:1.8;">
+        
+      </p>
+    </div>
+
+</div>
+    </div>
+  </div>
+
+  <!-- 改造社区 -->
+  <div id="community" class="page">
+    <h2 style="margin-bottom:8px;">改造日记 · 灵感社区</h2>
+    <p style="color:#6d7db0;font-weight:900;margin-bottom:18px;">
+      点击任意分享进入详情：左侧写实摄影可翻图，右侧文字与互动。发帖/点赞/评论/转发都可获得环保豆。
+    </p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px;">
+      <button class="btn-soft btn-vip" onclick="mockPost()">✍️ 发帖（+10豆）</button>
+      <button class="btn-soft" onclick="switchPage('beans')">去环保豆专区看看</button>
+    </div>
+    <div class="grid-4" id="communityGrid"></div>
+  </div>
+
+
+  <!-- 娃衣专区 -->
+  <div id="doll" class="page">
+    <h2 style="margin-bottom:8px;">娃衣专区 · 10cm / 20cm</h2>
+    <p style="color:#6d7db0;font-weight:900;margin-bottom:18px;">
+      和改造下单一样：可选推荐方案或盲盒。请先选择娃娃尺寸，再选择款式档位。
+    </p>
+
+    <div class="panel">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <div class="pill" style="background:#fff;border:1px solid #eee;">📏 选择尺寸：</div>
+        <button class="btn-soft" id="size10Btn" onclick="setDollSize(10)">10cm</button>
+        <button class="btn-soft" id="size20Btn" onclick="setDollSize(20)">20cm</button>
+        <div class="pill" style="background:#fff;border:1px solid #eee;">🌿 环保豆：<span id="beansInDoll">0</span></div>
+      </div>
+
+      <h3 style="margin:16px 0 12px;">定向款式</h3>
+      <div class="grid-4" id="dollGrid"></div>
+
+      <div style="margin-top:18px;background:#fafbff;border:1px solid #eee;border-radius:18px;padding:14px;">
+        <b>娃衣盲盒</b>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+          <div class="pill" style="background:#fff;border:1px solid #eee;">🎁 普通盲盒：10cm ¥29 / 20cm ¥39</div>
+          <div class="pill" style="background:#fff;border:1px solid #eee;">✨ 惊喜盲盒：10cm ¥49 / 20cm ¥59</div>
+          <button class="btn-soft btn-vip" onclick="buyDollBlind('普通')">购买普通盲盒</button>
+          <button class="btn-soft btn-vip" onclick="buyDollBlind('惊喜')">购买惊喜盲盒</button>
+        </div>
+        <p style="margin-top:10px;color:#6d7db0;font-weight:900;line-height:1.8;">
+          
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 环保豆专区 -->
+  <div id="beans" class="page">
+    <h2 style="margin-bottom:8px;">环保豆专区 · 攒攒有用</h2>
+    <p style="color:#6d7db0;font-weight:900;margin-bottom:18px;line-height:1.8;">
+      环保豆只能通过回收、社区互动、邀请好友等行为获得（不能充值）；<b>50豆=1元</b>，改造服务最高抵扣50%。
+    </p>
+
+    <div class="panel">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <div class="pill" style="background:#fff;border:1px solid #eee;">我的环保豆：<span id="beansBalanceText">0</span></div>
+        <button class="btn-soft" onclick="switchPage('upload')">去回收赚豆</button>
+        <button class="btn-soft" onclick="switchPage('community')">去社区互动赚豆</button>
+      </div>
+
+      <h3 style="margin:16px 0 12px;">① 兑换再造新衣 / 平台自营</h3>
+      <div class="grid-4" id="beansShopGrid"></div>
+
+      <h3 style="margin:22px 0 12px;">② 支持公益项目</h3>
+      <div class="grid-4" id="donateGrid"></div>
+
+      <div style="margin-top:18px;background:#fafbff;border:1px solid #eee;border-radius:18px;padding:14px;">
+        <b>常见赚豆方式</b>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <span class="tag">发布帖子 +10豆（每日3次）</span>
+          <span class="tag">评论 +2豆（每日10次）</span>
+          <span class="tag">转发 +5豆（每日3次）</span>
+          <span class="tag">被点赞 +1豆（每日20豆）</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 入驻设计师 -->
+  <div id="designers" class="page">
+    <h2 style="margin-bottom:20px;">入驻设计师专区</h2>
+
+    <div class="panel" style="margin-bottom:18px;">
+      <h3 style="margin-bottom:10px;">设计师分级</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="background:#fafbff;border:1px solid #eee;border-radius:18px;padding:14px;">
+          <b>新人设计师</b>
+          <p style="margin-top:8px;color:#6d7db0;font-weight:900;line-height:1.8;">来源：设计院校学生<br/>定价：亲民价（积累作品）<br/>参考：¥99–199</p>
+        </div>
+        <div style="background:#fafbff;border:1px solid #eee;border-radius:18px;padding:14px;">
+          <b>资深设计师</b>
+          <p style="margin-top:8px;color:#6d7db0;font-weight:900;line-height:1.8;">来源：独立设计师<br/>定价：中高端<br/>参考：¥499–999</p>
+        </div>
+        <div style="background:#fafbff;border:1px solid #eee;border-radius:18px;padding:14px;">
+          <b>娃衣专长</b>
+          <p style="margin-top:8px;color:#6d7db0;font-weight:900;line-height:1.8;">擅长：微缩工艺/娃圈<br/>定价：垂直专属<br/>参考：¥99–499</p>
+        </div>
+      </div>
+      <p style="margin-top:10px;color:#6d7db0;font-weight:900;line-height:1.8;">
+        * 价格为平台展示建议，具体以设计师档案与工艺复杂度为准。
+      </p>
+    </div>
+
+    <div class="designer-grid">
+      <div class="d-card">
+        <div class="d-header">
+          <div class="d-avatar" style="background-image:url('./images/复古1.jpg');background-size:cover;background-position:center;"></div>
+          <div><h4>Alex Chen</h4><p style="color:#6d7db0;font-weight:900;margin-top:4px;">专家级 | ￥499 起</p></div>
+        </div>
+        <p style="font-size:13px; color:#666; font-weight:900;">擅长：复古风</p>
+        <div class="d-portfolio">
+          <div class="p-img" style="background-image:url('./images/复古1.jpg');background-size:cover;background-position:center;"></div><div class="p-img" style="background-image:url('./images/复古2.jpg');background-size:cover;background-position:center;"></div><div class="p-img" style="background-image:url('./images/复古4.jpg');background-size:cover;background-position:center;"></div>
+        </div>
+      </div>
+
+      <div class="d-card">
+        <div class="d-header">
+          <div class="d-avatar" style="background-image:url('./images/可爱1.jpeg');background-size:cover;background-position:center;"></div>
+          <div><h4>Sarah Wang</h4><p style="color:#6d7db0;font-weight:900;margin-top:4px;">新锐级 | ￥199 起</p></div>
+        </div>
+        <p style="font-size:13px; color:#666; font-weight:900;">擅长：少女感拼布、宠物迷你服饰</p>
+        <div class="d-portfolio">
+          <div class="p-img" style="background-image:url('./images/可爱1.jpeg');background-size:cover;background-position:center;"></div><div class="p-img" style="background-image:url('./images/可爱2.jpeg');background-size:cover;background-position:center;"></div><div class="p-img" style="background-image:url('./images/可爱3.jpeg');background-size:cover;background-position:center;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 个人中心（新增会员升级） -->
+  <div id="profile" class="page">
+    <h2 style="margin-bottom:14px;">个人中心</h2>
+    <div class="profile-wrap">
+      <div class="profile-card">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="profile-avatar" id="profileAvatar">U</div>
+          <div>
+            <div class="pill" id="rolePill">👤 当前身份：普通用户</div>
+            <div class="pill vip" id="vipPill" style="display:none;margin-left:8px;">💎 会员已开通</div>
+            <h3 style="margin-top:10px;" id="profileName">@用户1</h3>
+            <p style="margin-top:6px;color:#6d7db0;font-weight:900;">旧衣改造 · 可持续生活 · 灵感记录</p>
+            <div class="pill" style="margin-top:10px;">🌿 环保豆：<span id="beansInProfile">0</span></div>
+          </div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="stat"><strong id="statPosts">0</strong><span>发布</span></div>
+          <div class="stat"><strong id="statLikes">0</strong><span>点赞</span></div>
+          <div class="stat"><strong id="statFavs">0</strong><span>收藏</span></div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn-soft" onclick="switchPage('community')">去社区看看</button>
+          <button class="btn-soft" onclick="switchPage('upload')">发起改造</button>
+          <button class="btn-soft btn-vip" onclick="toggleVIP()" id="vipBtn">升级会员</button>
+          <button class="btn-soft btn-danger" onclick="mockLogout()">退出登录</button>
+        </div>
+      </div>
+
+      <div class="profile-main">
+        <h3>我的近期互动</h3>
+        <p style="margin-top:8px;color:#6d7db0;font-weight:900;line-height:1.8;">
+          展示你最近点赞/收藏/评论/转发/浏览过的内容（本地数据模拟，可刷新保留）。
+        </p>
+        <div style="margin-top:12px;" id="recentList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 收藏页 -->
+  <div id="collections" class="page">
+    <div class="panel">
+      <h2>我的收藏</h2>
+      <p>这里展示你收藏过的所有改造日记（点击进入详情）。</p>
+      <div class="grid-4" id="collectionsGrid"></div>
+    </div>
+  </div>
+
+  <!-- 历史页 -->
+  <div id="history" class="page">
+    <div class="panel">
+      <h2>浏览历史</h2>
+      <p>这里展示你点开过的日记（按最近浏览排序）。</p>
+      <div class="grid-4" id="historyGrid"></div>
+    </div>
+  </div>
+
+  <!-- 转发页 -->
+  <div id="shares" class="page">
+    <div class="panel">
+      <h2>我的转发</h2>
+      <p>这里展示你转发过的日记（点击进入详情）。</p>
+      <div class="grid-4" id="sharesGrid"></div>
+    </div>
+  </div>
+
+  <!-- 私信页 -->
+  <div id="dm" class="page">
+    <h2 style="margin-bottom:14px;">私信</h2>
+    <div class="split-2">
+      <div class="list" id="dmList"></div>
+      <div class="chat">
+        <div class="chat-head">
+          <div>
+            <b id="dmTitle">请选择一个会话</b>
+            <div style="color:#6d7db0;font-weight:900;margin-top:4px;" id="dmSub">点击左侧联系人进入私信聊天</div>
+          </div>
+          <button class="btn-soft" onclick="mockNewDM()">+ 新私信</button>
+        </div>
+        <div class="chat-body" id="dmBody"></div>
+        <div class="chat-bar">
+          <input id="dmInput" placeholder="输入消息…" />
+          <button onclick="sendDM()">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 群聊页 -->
+  <div id="groups" class="page">
+    <h2 style="margin-bottom:14px;">群聊</h2>
+    <div class="split-2">
+      <div class="list" id="groupList"></div>
+      <div class="chat">
+        <div class="chat-head">
+          <div>
+            <b id="groupTitle">请选择一个群聊</b>
+            <div style="color:#6d7db0;font-weight:900;margin-top:4px;" id="groupSub">点击左侧群聊进入聊天</div>
+          </div>
+          <button class="btn-soft" onclick="mockNewGroup()">+ 新群聊</button>
+        </div>
+        <div class="chat-body" id="groupBody"></div>
+        <div class="chat-bar">
+          <input id="groupInput" placeholder="输入消息…" />
+          <button onclick="sendGroup()">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 帖子详情弹窗 -->
+  <div class="modal" id="postModal" role="dialog" aria-modal="true" aria-label="帖子详情">
+    <div class="modal-wrap">
+      <button class="modal-close" onclick="closePost()">✕</button>
+
+      <div class="modal-left">
+        <div class="carousel-img" id="carouselImg"></div>
+        <div class="carousel-nav">
+          <button class="c-btn" onclick="prevImg()">⬅ 上一张</button>
+          <div class="dots" id="dots"></div>
+          <button class="c-btn" onclick="nextImg()">下一张 ➡</button>
+        </div>
+      </div>
+
+      <div class="modal-right">
+        <div class="post-head">
+          <div class="post-user">
+            <div class="mini-avatar" id="postAvatar">U</div>
+            <div>
+              <b id="postUser">@用户1</b>
+              <small id="postMeta">· 刚刚 · 城市：上海</small>
+            </div>
+          </div>
+          <div style="font-weight:900;color:#6d7db0;" id="postLikeHint">❤️ 0</div>
+        </div>
+
+        <div>
+          <h3 id="postTitle" style="margin-top:6px;"></h3>
+          <div class="tagline" id="postTags"></div>
+        </div>
+
+        <div class="post-text" id="postText"></div>
+
+        <div class="post-actions">
+          <button class="act danger" id="btnLike" onclick="toggleLike()">❤️ 点赞 <span id="likeCount"></span></button>
+          <button class="act" id="btnFav" onclick="toggleFav()">⭐ 收藏 <span id="favCount"></span></button>
+          <button class="act" onclick="sharePost()">🔄 转发</button>
+          <button class="act" onclick="focusComment()">💬 评论 <span id="cmtCount"></span></button>
+        </div>
+
+        <div class="comments" id="commentList"></div>
+
+        <div class="comment-bar">
+          <input id="commentInput" placeholder="写下你的评论（回车也可发送）…" />
+          <button onclick="addComment()">发送</button>
+        </div>
+
+        <details style="margin-top:8px;">
+          <summary style="cursor:pointer;color:#6d7db0;font-weight:900;">查看该帖 AI 写实摄影 Prompt（用于出图替换）</summary>
+          <div style="margin-top:10px;border:1px solid #eee;border-radius:16px;padding:12px;background:#fafbff;">
+            <div style="font-weight:900;color:#2f4b8b;margin-bottom:6px;">封面/细节图 Prompts：</div>
+            <pre id="promptBox" style="white-space:pre-wrap;font-weight:900;color:#3a4f88;line-height:1.6;"></pre>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div><h4>衣生 RevBox</h4><p>由AI驱动的旧衣重生平台，连接情感与可持续未来。</p></div>
+    <div><h4>服务中心</h4><p>改造流程</p><p>设计师入驻</p><p>合作加盟</p></div>
+    <div><h4>关于我们</h4><p>品牌故事</p><p>环保数据</p><p>联系我们</p></div>
+    <div><h4>关注我们</h4><p>微信公众号</p><p>社区官方号</p><p>微博</p></div>
+  </footer>
+
+  <script>
+    /* ========= 基础：本地持久化 ========= */
+    const STORAGE_KEY = "revbox_state_v1";
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      }catch(e){ return null; }
+    }
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        posts: posts.map(p=>({
+          id:p.id, _liked:!!p._liked, _faved:!!p._faved,
+          like:p.like, fav:p.fav, comments:p.comments, shared:!!p._shared
+        })),
+        history: historyIds,
+        vip: isVIP,
+        dm: dmData,
+        groups: groupData,
+        beans: beansBalance
+      }));
+    }
+
+    /* ========= 环保豆：本地余额 + 发放 ========= */
+    function clamp(n){ return Math.max(0, Math.floor(n)); }
+    function addBeans(reason, amount){
+      beansBalance = clamp(beansBalance + amount);
+      toast(`🌿 +${amount} 豆 · ${reason}`);
+      syncBeansUI();
+      saveState();
+    }
+    function spendBeans(reason, amount){
+      if(beansBalance < amount){
+        toast(`环保豆不足：需要 ${amount} 豆`);
+        return false;
+      }
+      beansBalance = clamp(beansBalance - amount);
+      toast(`🌿 -${amount} 豆 · ${reason}`);
+      syncBeansUI();
+      saveState();
+      return true;
+    }
+    function syncBeansUI(){
+      const a = document.getElementById("beansInProfile");
+      if(a) a.textContent = beansBalance;
+      const b = document.getElementById("beansBalanceText");
+      if(b) b.textContent = beansBalance;
+      const c = document.getElementById("beansInDoll");
+      if(c) c.textContent = beansBalance;
+    }
+    function toast(msg){
+      const el = document.createElement("div");
+      el.textContent = msg;
+      el.style.cssText = "position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(40,67,125,.92);color:#fff;padding:10px 14px;border-radius:999px;font-weight:900;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.18);";
+      document.body.appendChild(el);
+      setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; }, 1400);
+      setTimeout(()=>{ el.remove(); }, 1700);
+    }
+
+    /* ========= 下单模式切换：回收 / 改造 ========= */
+    function setOrderMode(mode, btn){
+      document.querySelectorAll('.mode-switch .m-btn').forEach(b=>b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+      const r = document.getElementById('recycleBox');
+      const m = document.getElementById('remakeBox');
+      if(mode==='recycle'){
+        if(r) r.style.display = 'block';
+        if(m) m.style.display = 'none';
+      }else{
+        if(r) r.style.display = 'none';
+        if(m) m.style.display = 'block';
+      }
+    }
+    function calcRecycle(){
+      const kg = parseFloat(document.getElementById('recycleKg').value || '0') || 0;
+      const cash = (kg * 0.6);
+      let beans = Math.floor(kg * 20);
+      if(kg >= 5) beans += 50; // 满5公斤奖励（演示）
+      document.getElementById('recycleCash').textContent = '¥ ' + cash.toFixed(1);
+      document.getElementById('recycleBeans').textContent = String(beans);
+    }
+    function placeRecycleOrder(){
+      calcRecycle();
+      const beans = parseInt(document.getElementById('recycleBeans').textContent || '0', 10) || 0;
+      addBeans('回收完成（入账）', beans);
+      alert('回收订单已提交 ✅\n\n回收衣物将进入降解/再造流程，并在环保豆专区上架。');
+    }
+
+    /* ========= 页面切换 ========= */
+    function switchPage(id){
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      const el = document.getElementById(id);
+      if(el) el.classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+      // 每次切页都刷新对应列表
+      if(id==="collections") renderCollections();
+      if(id==="history") renderHistory();
+      if(id==="shares") renderShares();
+      if(id==="dm") { renderDMList(); renderDMBadges(); }
+      if(id==="groups") { renderGroupList(); renderGroupBadges(); }
+      if(id==="profile") { refreshProfile(); }
+      if(id==="doll") { renderDollGrid(); syncBeansUI(); }
+      if(id==="beans") { renderBeansShop(); renderDonations(); syncBeansUI(); }
+    }
+
+    function setMode(btn){
+      document.querySelectorAll('.m-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    function runAI(){
+      const loading = document.getElementById('loading-txt');
+      loading.style.display = 'block';
+      setTimeout(()=>{
+        loading.style.display = 'none';
+        document.getElementById('aiReport').style.display = 'block';
+        document.getElementById('aiReport').scrollIntoView({behavior:'smooth'});
+      }, 900);
+    }
+
+    /* ========= 右侧按钮：进入页面 ========= */
+    function openCollectionPage(){ switchPage("collections"); }
+    function openHistoryPage(){ switchPage("history"); }
+    function openDMPage(){ switchPage("dm"); }
+    function openSharePage(){ switchPage("shares"); }
+    function openGroupPage(){ switchPage("groups"); }
+
+    /* ========= 写实摄影图片（占位图源，打开即可看到摄影风） =========
+       你用 AI 出图后，把这些 URL 替换成你的图片链接即可。
+    */
+    function u(id){ return `https://images.unsplash.com/${id}?auto=format&fit=crop&q=80&w=1600`; }
+
+    /* ========= 社区数据（每条含 AI 写实摄影 prompt） ========= */
+    const posts = [
+      {
+        id: 1, user: "用户1", city: "上海", time: "2小时前",
+        title: "旧牛仔裤改造成托特包：耐用又百搭",
+        tags: ["#旧衣改造", "#牛仔", "#托特包", "#可持续生活"],
+        text: "把穿旧的牛仔裤拆解成大块面料，保留原裤袋当作外侧收纳；底部加一层挺括衬布，肩带用裤脚拼接更结实。成品容量大、耐磨，日常通勤超实用。",
+        like: 152, fav: 41, shared:false,
+        comments: [
+          {user:"用户3", text:"裤袋当外侧收纳这个思路太妙了！"},
+          {user:"用户6", text:"请问肩带长度大概做多少合适？"}
+        ],
+        images: [
+          './images/牛仔包1.jpg',
+          './images/牛仔包2.jpg',
+          './images/牛仔包3.jpg'
+        ],
+        prompts: [
+          "写实摄影，旧牛仔裤改造的托特包放在木桌上，保留牛仔裤口袋作为外侧收纳，柔和自然窗光，浅景深，50mm镜头，细节清晰，真实布料纹理，生活方式摄影，4k。",
+          "写实摄影特写：牛仔托特包的口袋与缝线细节，针脚、磨白纹理、金属铆钉清晰可见，侧逆光，微距风格，真实质感。",
+          "写实摄影：通勤场景，人物手提牛仔托特包走在城市街道，背景虚化，电影感色彩，真实自然。"
+        ]
+      },
+      {
+        id: 2, user: "用户2", city: "杭州", time: "昨天",
+        title: "旧衬衫拼布成抱枕套：客厅氛围感瞬间有了",
+        tags: ["#拼布", "#家居", "#抱枕", "#环保生活"],
+        text: "不同花色的旧衬衫按同一色系分组，做九宫格拼布；背面用整片纯色布更干净。最后加上隐形拉链，拆洗方便，客厅立刻变得更温柔。",
+        like: 98, fav: 33, shared:false,
+        comments: [{user:"用户5", text:"九宫格拼布太治愈了，配色也舒服！"}],
+        images: ['./images/枕套1.jpeg', './images/枕套2.jpeg', './images/枕套3.jpeg'],
+        prompts: [
+          "写实摄影，九宫格拼布抱枕套摆在浅色沙发上，拼布由旧衬衫布料组成，同色系柔和配色，自然窗光，室内家居摄影，真实布料纹理，4k。",
+          "写实摄影特写：拼布接缝与隐形拉链细节，针脚干净，布料纹理真实，柔和侧光，微距。",
+          "写实摄影：客厅氛围场景，多个拼布抱枕搭配绿植与杂志，温柔奶油色调，生活方式摄影。"
+        ]
+      },
+      {
+        id: 3, user: "用户3", city: "成都", time: "3天前",
+        title: "旧T恤改宠物围兜：软乎乎还不勒脖子",
+        tags: ["#宠物", "#围兜", "#旧T恤", "#手作"],
+        text: "选弹性好的旧T恤，领口位置直接当围兜弧线；边缘包边防卷边，背面用魔术贴固定，调节范围大。吃饭不怕弄脏毛，清洗也方便。",
+        like: 66, fav: 20, shared:false,
+        comments: [{user:"用户1", text:"这个太实用了！我家猫也需要！"}],
+        images: ['./images/围兜1.jpg','./images/围兜2.jpg','./images/围兜3.jpg'],
+        prompts: [
+          "写实摄影，小型宠物（猫或小狗）佩戴旧T恤改造的围兜，围兜柔软，背面魔术贴，厨房或餐厅场景，自然光，真实毛发与布料质感，4k。",
+          "写实摄影特写：围兜包边与魔术贴细节，针脚与布料弹性纹理清晰，微距，柔和侧光。",
+          "写实摄影：宠物在吃饭，围兜保护毛发不被弄脏，生活方式摄影，浅景深。"
+        ]
+      },
+      {
+        id: 4, user: "用户4", city: "深圳", time: "上周",
+        title: "旧毛衣做束发带：冬天的温柔都在头上",
+        tags: ["#毛衣", "#束发带", "#冬日手作", "#循环利用"],
+        text: "把旧毛衣袖口位置剪下，内侧缝一圈松紧带；外层保留毛绒纹理更有质感。宽一点的版型不夹头，洗脸、护肤、做瑜伽都能用。",
+        like: 74, fav: 27, shared:false,
+        comments: [{user:"用户2", text:"袖口直接用太省事了！"}],
+        images: ['./images/束发带1.jpeg', './images/束发带2.jpeg', './images/束发带3.jpeg' ],
+        prompts: [
+          "写实摄影，旧毛衣袖口改造的束发带放在洗手台旁，毛绒纹理清晰，暖色自然光，生活方式摄影，4k。",
+          "写实摄影特写：束发带的针脚与松紧带结构，细节真实，微距，柔和侧光。",
+          "写实摄影：人物护肤或洗脸佩戴毛衣束发带，干净浴室背景，浅景深，真实肤质。"
+        ]
+      },
+      {
+        id: 5, user:"用户5", city:"南京", time:"1周前",
+        title:"旧裙摆改收纳袋：抽绳一拉就收口",
+        tags:["#收纳","#抽绳袋","#旧裙子","#断舍离"],
+        text:"用裙摆大圆弧做袋身，顶部穿绳当抽绳；内里加一层薄棉更挺。用来装内衣、袜子、化妆品都很合适，旅行必备。",
+        like: 55, fav: 18, shared:false,
+        comments:[{user:"用户7", text:"旅行收纳真的需要这个！"}],
+        images:[ './images/收纳袋1.jpg', './images/收纳袋2.jpg','./images/收纳袋3.jpg' ],
+        prompts:[
+          "写实摄影，旧裙摆改造的抽绳收纳袋摆在行李箱旁，抽绳半收口，布料有垂坠感，自然光，旅行生活方式摄影，4k。",
+          "写实摄影特写：抽绳孔位与绳结细节，针脚干净，布料纹理真实，微距。",
+          "写实摄影：收纳袋装着化妆品/袜子等小物，整齐排布，极简背景，浅景深。"
+        ]
+      },
+      {
+        id: 6, user:"用户6", city:"武汉", time:"1周前",
+        title:"旧风衣改短款外套：比例更显腿长",
+        tags:["#风衣","#改短","#剪裁","#穿搭"],
+        text:"把下摆裁短到胯部位置，袖口调整宽度；腰带保留做点缀。整体比例更利落，春秋搭配牛仔裤更显精神。",
+        like: 83, fav: 29, shared:false,
+        comments:[{user:"用户4", text:"改短后的比例真的会更时髦！"}],
+        images:[ './images/风衣2.jpeg','./images/风衣1.jpeg', './images/风衣3.jpeg' ],
+        prompts:[
+          "写实摄影，旧风衣改短后的短款外套挂在衣架上，剪裁利落，室内自然光，真实布料质感，4k。",
+          "写实摄影特写：下摆裁剪线、缝边与袖口调整细节，针脚清晰，微距。",
+          "写实摄影：人物穿着短款风衣搭配牛仔裤，街拍风，电影感色彩，浅景深。"
+        ]
+      },
+      {
+        id: 7, user:"用户7", city:"北京", time:"2周前",
+        title:"旧床单改野餐垫：防潮层一铺就走",
+        tags:["#野餐","#床单","#防潮","#户外"],
+        text:"床单做表层，底部加一层防潮布（或雨衣料），四角缝上固定扣。折叠后体积小，周末公园野餐刚刚好。",
+        like: 92, fav: 38, shared:false,
+        comments:[{user:"用户2", text:"四角固定扣细节太贴心！"}],
+        images:['./images/野餐垫1.jpg', './images/野餐垫2.jpg','./images/野餐垫3.jpg' ],
+        prompts:[
+          "写实摄影，公园草地野餐场景，旧床单改造的野餐垫铺在草地上，角落有固定扣细节，阳光自然，生活方式摄影，4k。",
+          "写实摄影特写：野餐垫的防潮层边缘与固定扣，材质真实，微距，侧光。",
+          "写实摄影：折叠后的野餐垫放进帆布袋或手提，准备出门，浅景深。"
+        ]
+      },
+      {
+        id: 8, user:"用户8", city:"西安", time:"2周前",
+        title:"旧围巾改手提小袋：一小时完成的松弛感",
+        tags:["#围巾","#手提袋","#极简","#周末手作"],
+        text:"围巾对折缝合侧边，顶部留口；同材质做两条短提手。布料柔软有垂感，装手机钥匙刚好，出门很轻松。",
+        like: 61, fav: 22, shared:false,
+        comments:[{user:"用户1", text:"一小时完成也太友好了！"}],
+        images:[ './images/帆布袋2.jpeg','./images/帆布袋1.jpeg', './images/帆布袋3.jpeg' ],
+        prompts:[
+          "写实摄影，旧围巾改造的手提小袋放在咖啡店桌面，柔软垂感，装手机钥匙，暖色自然光，生活方式摄影，4k。",
+          "写实摄影特写：围巾布料纹理与侧边缝线，针脚清晰，微距。",
+          "写实摄影：周末出行手提小袋，街头或室内走动场景，浅景深，真实色彩。"
+        ]
+      }
+    ];
+
+    /* ========= 状态：历史/会员/私信/群聊 ========= */
+    let historyIds = [];
+    let isVIP = false;
+    let beansBalance = 0;
+
+    // 私信数据结构：conversations: [{id, name, unread, messages:[{from:'me'|'other', text}]}]
+    let dmData = {
+      currentId: null,
+      conversations: [
+        {id:"dm1", name:"用户2", unread:2, messages:[
+          {from:"other", text:"你那个牛仔托特包太好看了！能分享一下版型吗？"},
+          {from:"me", text:"可以呀，我用的是A4能放下的尺寸，底部加了衬布更挺。"},
+          {from:"other", text:"肩带用什么做最结实？"},
+          {from:"other", text:"我也想复刻一个～"}
+        ]},
+        {id:"dm2", name:"用户6", unread:0, messages:[
+          {from:"other", text:"请问你拼布抱枕用的衬布是哪种？"},
+          {from:"me", text:"薄棉麻就行，背面用纯色更干净。"}
+        ]},
+        {id:"dm3", name:"用户8", unread:1, messages:[
+          {from:"other", text:"围巾小袋有教程吗？"},
+          {from:"me", text:"对折缝侧边，顶部留口，提手用同材质两条短带即可。"},
+          {from:"other", text:"收到！谢谢～"}
+        ]}
+      ]
+    };
+
+    // 群聊数据结构：groups: [{id, name, unread, members, messages:[{from,name,text}]}]
+    let groupData = {
+      currentId: null,
+      groups: [
+        {id:"g1", name:"改造灵感交流群", unread:3, members:128, messages:[
+          {from:"系统", name:"系统", text:"欢迎加入改造灵感交流群～"},
+          {from:"other", name:"用户5", text:"大家最近都在改什么？"},
+          {from:"other", name:"用户7", text:"我把旧床单改成野餐垫啦！"},
+          {from:"me", name:"用户1", text:"我刚做了牛仔托特包，耐用还百搭。"}
+        ]},
+        {id:"g2", name:"拼布家居爱好者", unread:0, members:64, messages:[
+          {from:"系统", name:"系统", text:"群规：文明交流，禁止广告。"},
+          {from:"other", name:"用户2", text:"九宫格拼布的配色怎么选比较稳？"},
+          {from:"me", name:"用户1", text:"建议同色系深浅变化，再加一块中性色压住。"}
+        ]}
+      ]
+    };
+
+    /* ========= 读取本地状态覆盖 ========= */
+    const st = loadState();
+    if(st){
+      // posts
+      if(Array.isArray(st.posts)){
+        st.posts.forEach(ps=>{
+          const p = posts.find(x=>x.id===ps.id);
+          if(p){
+            p._liked = !!ps._liked;
+            p._faved = !!ps._faved;
+            if(typeof ps.like === "number") p.like = ps.like;
+            if(typeof ps.fav === "number") p.fav = ps.fav;
+            if(Array.isArray(ps.comments)) p.comments = ps.comments;
+            p._shared = !!ps.shared;
+          }
+        });
+      }
+      if(Array.isArray(st.history)) historyIds = st.history;
+      if(typeof st.vip === "boolean") isVIP = st.vip;
+      if(st.dm && st.dm.conversations) dmData = st.dm;
+      if(st.groups && st.groups.groups) groupData = st.groups;
+      if(typeof st.beans === 'number') beansBalance = st.beans;
+    }
+
+    /* ========= 首页案例 ========= */
+    const caseImages = [
+      './images/复古1.jpg',
+      './images/复古2.jpg',
+      './images/复古3.jpg',
+      './images/复古4.jpg'
+    ];
+    const caseGrid = document.getElementById('caseGrid');
+    for(let i=1;i<=4;i++){
+      const el = document.createElement('div');
+      el.className = 'card-4';
+      el.innerHTML = `
+        <div class="card-img" style="background-image:url('${caseImages[i-1]}')"></div>
+        <div class="card-body">
+          <strong>复古改造案例 #${i}</strong>
+          <p style="font-size:12px; color:#6d7db0; font-weight:900; margin-top:6px;">设计师：ALEX CHEN</p>
+          <div class="price-tag">¥ 128.5</div>
+        </div>`;
+      caseGrid.appendChild(el);
+    }
+
+
+    /* ========= 娃衣专区：定价渲染 ========= */
+    let dollSize = 10; // 10cm / 20cm
+    function setDollSize(size){
+      dollSize = size;
+      const b10 = document.getElementById('size10Btn');
+      const b20 = document.getElementById('size20Btn');
+      if(b10 && b20){
+        b10.classList.toggle('btn-vip', size===10);
+        b20.classList.toggle('btn-vip', size===20);
+      }
+      renderDollGrid();
+      syncBeansUI();
+    }
+    function dollPrice(base10){
+      if(dollSize===10) return base10;
+      return Math.round(base10 * 1.3);
+    }
+    function renderDollGrid(){
+      const grid = document.getElementById('dollGrid');
+      if(!grid) return;
+      const items = [
+        {name:'B档（基础款）', base10:39, img:'./images/B档基础款.png', desc:'棉/化纤等易处理面料'},
+        {name:'A档（设计款）', base10:69, img:'./images/A档设计款.png', desc:'普通牛仔/薄羊毛等'},
+        {name:'S档（精致款）', base10:99, img:'./images/S档精致款.png', desc:'厚牛仔/真丝/蕾丝等难处理面料'},
+        {name:'娃衣专长设计师定制', base10:129, img:'./images/娃衣专长设计师定制.png', desc:'更复杂微缩工艺'}
+      ];
+      grid.innerHTML = '';
+      items.forEach(it=>{
+        const price = dollPrice(it.base10);
+        const el = document.createElement('div');
+        el.className = 'card-4';
+        el.innerHTML = `
+          <div class="card-img" style="background-image:url('${it.img}')"></div>
+          <div class="card-body">
+            <b>${it.name}</b>
+            <p style="font-size:12px;color:#6d7db0;font-weight:900;margin-top:6px;line-height:1.6;">${it.desc}</p>
+            <div class="price-tag">¥ ${price}</div>
+            <button class="btn-soft btn-vip" style="margin-top:10px;width:100%;" onclick="buyDoll('${it.name}', ${price})">选择此款</button>
+          </div>`;
+        grid.appendChild(el);
+      });
+    }
+    function buyDoll(name, price){
+      alert(`已选择：${name}（${dollSize}cm）\n价格：¥ ${price} ✅`);
+      addBeans('娃衣下单奖励', 5);
+    }
+    function buyDollBlind(type){
+      const price = (type==='普通') ? (dollSize===10?29:39) : (dollSize===10?49:59);
+      alert(`已购买${type}盲盒（${dollSize}cm）\n价格：¥ ${price} ✅`);
+      addBeans('娃衣盲盒下单奖励', 5);
+    }
+
+    /* ========= 环保豆专区：兑换/公益 ========= */
+    function renderBeansShop(){
+      const grid = document.getElementById('beansShopGrid');
+      if(!grid) return;
+      const items = [
+        {name:'再造新衣（回收再生系列）', beans:2000, cash:39, img:'./images/再造新衣.png'},
+        {name:'再生帆布袋（全豆）', beans:1450, cash:0, img:'./images/再生帆布袋.png'},
+        {name:'再生面料笔记本（全豆）', beans:750, cash:0, img:'./images/再生面料笔记本.jpeg'},
+        {name:'娃衣边角料盲盒（清库存）', beans:100, cash:0, img:'./images/娃衣边角料盲盒.jpeg'}
+      ];
+      grid.innerHTML = '';
+      items.forEach(it=>{
+        const el = document.createElement('div');
+        el.className='card-4';
+        el.innerHTML = `
+          <div class="card-img" style="background-image:url('${it.img}')"></div>
+          <div class="card-body">
+            <b>${it.name}</b>
+            <p style="font-size:12px;color:#6d7db0;font-weight:900;margin-top:6px;">需要：${it.beans} 豆 ${it.cash?(' + ¥'+it.cash):'(全豆兑换)'}</p>
+            <button class="btn-soft btn-vip" style="margin-top:10px;width:100%;" onclick="redeem('${it.name}', ${it.beans})">兑换</button>
+          </div>`;
+        grid.appendChild(el);
+      });
+    }
+    function renderDonations(){
+      const grid = document.getElementById('donateGrid');
+      if(!grid) return;
+      const items = [
+        {name:'在上海社区种一棵树（配捐）', beans:3000, img:'./images/树.jpg'},
+        {name:'为留守儿童捐再生校服（配捐）', beans:2000, img:'./images/校服.jpg'},
+        {name:'支持宝妈手工工坊（配捐）', beans:1000, img:'./images/手工工坊.jpg'},
+        {name:'电子环保徽章（荣誉）', beans:100, img:'./images/徽章.jpg', hint:'挂个人主页'}
+      ];
+      grid.innerHTML = '';
+      items.forEach(it=>{
+        const el = document.createElement('div');
+        el.className='card-4';
+        el.innerHTML = `
+          <div class="card-img" style="background-image:url('${it.img}')"></div>
+          <div class="card-body">
+            <b>${it.name}</b>
+            <p style="font-size:12px;color:#6d7db0;font-weight:900;margin-top:6px;">需要：${it.beans} 豆 · ${it.hint}</p>
+            <button class="btn-soft btn-vip" style="margin-top:10px;width:100%;" onclick="donate('${it.name}', ${it.beans})">支持</button>
+          </div>`;
+        grid.appendChild(el);
+      });
+    }
+    function redeem(name, beans){
+      if(spendBeans(`兑换：${name}`, beans)){
+        alert(`兑换成功 ✅\n\n${name}\n消耗：${beans} 豆`);
+      }
+    }
+    function donate(name, beans){
+      if(spendBeans(`公益：${name}`, beans)){
+        alert(`感谢支持 ✅\n\n${name}\n消耗：${beans} 豆\n可扩展证书/编号）`);
+      }
+    }
+
+    /* ========= 社区列表渲染 ========= */
+    const communityGrid = document.getElementById('communityGrid');
+    function formatCount(n){
+      if(n>=10000) return (n/10000).toFixed(1).replace(/\.0$/,'')+"w";
+      if(n>=1000) return (n/1000).toFixed(1).replace(/\.0$/,'')+"k";
+      return String(n);
+    }
+    function renderCommunity(){
+      communityGrid.innerHTML = "";
+      posts.forEach((p)=>{
+        const el = document.createElement('div');
+        el.className = 'card-4';
+        el.onclick = ()=>openPost(p.id);
+        el.innerHTML = `
+          <div class="card-img" style="background-image:url('${p.images[0]}')"></div>
+          <div class="card-body">
+            <p style="font-size:14px; height:44px; overflow:hidden; font-weight:900; color:#2d437d; line-height:1.6;">
+              ${p.title}
+            </p>
+            <p style="font-size:12px; color:#6d7db0; font-weight:900; margin-top:8px; height:34px; overflow:hidden;">
+              ${p.text}
+            </p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:12px; color:#888; font-weight:900;">
+              <span>@${p.user}</span><span>❤️ ${formatCount(p.like)}</span>
+            </div>
+          </div>`;
+        communityGrid.appendChild(el);
+      });
+    }
+    renderCommunity();
+
+    function mockPost(){
+      addBeans('发布帖子奖励', 10);
+      alert('已发布一条改造日记 ✅\n\n（此页面使用静态帖子数据，未真正新增卡片）');
+      saveState();
+      refreshProfile();
+    calcRecycle();
+    setDollSize(10);
+    renderBeansShop();
+    renderDonations();
+    syncBeansUI();
+      refreshRecent();
+    }
+
+    /* ========= 详情：轮播 + 互动 + 评论 + Prompt ========= */
+    let currentPost = null;
+    let currentImgIndex = 0;
+
+    function pushHistory(postId){
+      // 去重置顶
+      historyIds = historyIds.filter(x=>x!==postId);
+      historyIds.unshift(postId);
+      historyIds = historyIds.slice(0, 50);
+    }
+
+    function openPost(id){
+      const p = posts.find(x=>x.id===id);
+      if(!p) return;
+      currentPost = p;
+      currentImgIndex = 0;
+
+      // 历史
+      pushHistory(p.id);
+
+      document.getElementById('postUser').textContent = `@${p.user}`;
+      document.getElementById('postAvatar').textContent = (p.user||"用户").replace("用户","U");
+      document.getElementById('postMeta').textContent = `· ${p.time} · 城市：${p.city}`;
+      document.getElementById('postTitle').textContent = p.title;
+      document.getElementById('postText').textContent = p.text;
+
+      // tags
+      const tagBox = document.getElementById('postTags');
+      tagBox.innerHTML = "";
+      p.tags.forEach(t=>{
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.textContent = t.trim();
+        tagBox.appendChild(span);
+      });
+
+      // counts
+      document.getElementById('likeCount').textContent = `(${p.like})`;
+      document.getElementById('favCount').textContent = `(${p.fav})`;
+      document.getElementById('cmtCount').textContent = `(${p.comments.length})`;
+      document.getElementById('postLikeHint').textContent = `❤️ ${formatCount(p.like)}`;
+
+      // prompt box
+      document.getElementById('promptBox').textContent = (p.prompts || []).map((x,i)=>`图${i+1}: ${x}`).join("\n\n");
+
+      // button states
+      document.getElementById('btnLike').classList.toggle('active', !!p._liked);
+      document.getElementById('btnFav').classList.toggle('active', !!p._faved);
+
+      // comments
+      renderComments();
+
+      // carousel
+      renderCarousel();
+
+      // show
+      document.getElementById('postModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      saveState();
+      refreshProfile();
+      refreshRecent();
+    }
+
+    function closePost(){
+      document.getElementById('postModal').style.display = 'none';
+      document.body.style.overflow = '';
+      currentPost = null;
+      saveState();
+    }
+
+    function renderCarousel(){
+      if(!currentPost) return;
+      const img = currentPost.images[currentImgIndex];
+      document.getElementById('carouselImg').style.backgroundImage = `url('${img}')`;
+      const dots = document.getElementById('dots');
+      dots.innerHTML = "";
+      currentPost.images.forEach((_, i)=>{
+        const d = document.createElement('div');
+        d.className = 'dot' + (i===currentImgIndex ? ' active' : '');
+        d.onclick = ()=>{ currentImgIndex=i; renderCarousel(); };
+        dots.appendChild(d);
+      });
+    }
+    function prevImg(){
+      if(!currentPost) return;
+      currentImgIndex = (currentImgIndex - 1 + currentPost.images.length) % currentPost.images.length;
+      renderCarousel();
+    }
+    function nextImg(){
+      if(!currentPost) return;
+      currentImgIndex = (currentImgIndex + 1) % currentPost.images.length;
+      renderCarousel();
+    }
+
+    function toggleLike(){
+      if(!currentPost) return;
+      currentPost._liked = !currentPost._liked;
+      currentPost.like += currentPost._liked ? 1 : -1;
+      if(currentPost._liked) addBeans('点赞奖励', 1);
+      document.getElementById('btnLike').classList.toggle('active', !!currentPost._liked);
+      document.getElementById('likeCount').textContent = `(${currentPost.like})`;
+      document.getElementById('postLikeHint').textContent = `❤️ ${formatCount(currentPost.like)}`;
+      renderCommunity();
+      refreshProfile();
+      refreshRecent();
+      saveState();
+    }
+
+    function toggleFav(){
+      if(!currentPost) return;
+      currentPost._faved = !currentPost._faved;
+      currentPost.fav += currentPost._faved ? 1 : -1;
+      if(currentPost._faved) addBeans('收藏奖励', 2);
+      document.getElementById('btnFav').classList.toggle('active', !!currentPost._faved);
+      document.getElementById('favCount').textContent = `(${currentPost.fav})`;
+      renderCommunity();
+      refreshProfile();
+      refreshRecent();
+      saveState();
+    }
+
+    function sharePost(){
+      if(!currentPost) return;
+      currentPost._shared = true;
+
+      const txt = `【衣生 RevBox】${currentPost.title}\n@${currentPost.user}\n${currentPost.text}`;
+      addBeans('转发奖励', 5);
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(txt).then(()=>alert("已复制分享文案到剪贴板 ✅"));
+      }else{
+        alert("你的浏览器不支持自动复制：\n\n" + txt);
+      }
+      refreshRecent();
+      saveState();
+    }
+
+    function renderComments(){
+      const box = document.getElementById('commentList');
+      box.innerHTML = "";
+      (currentPost.comments || []).forEach(c=>{
+        const el = document.createElement('div');
+        el.className = 'cmt';
+        el.innerHTML = `<b>@${c.user}</b><p>${c.text}</p>`;
+        box.appendChild(el);
+      });
+      if((currentPost.comments || []).length===0){
+        box.innerHTML = `<div style="color:#6d7db0;font-weight:900;">还没有评论，来抢沙发～</div>`;
+      }
+    }
+
+    function addComment(){
+      if(!currentPost) return;
+      const input = document.getElementById('commentInput');
+      const val = (input.value || "").trim();
+      if(!val) return;
+      currentPost.comments.push({user:"用户1", text: val});
+      addBeans('评论奖励', 2);
+      input.value = "";
+      renderComments();
+      document.getElementById('cmtCount').textContent = `(${currentPost.comments.length})`;
+      renderCommunity();
+      refreshRecent();
+      saveState();
+      const box = document.getElementById('commentList');
+      box.scrollTop = box.scrollHeight;
+    }
+    function focusComment(){ document.getElementById('commentInput').focus(); }
+
+    document.getElementById('commentInput').addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') addComment();
+    });
+    document.getElementById('postModal').addEventListener('click', (e)=>{
+      if(e.target.id === 'postModal') closePost();
+    });
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape'){
+        const m = document.getElementById('postModal');
+        if(m.style.display === 'flex') closePost();
+      }
+    });
+
+    /* ========= 收藏/历史/转发：列表页渲染 ========= */
+    function renderCardGrid(containerId, list){
+      const grid = document.getElementById(containerId);
+      grid.innerHTML = "";
+      if(!list.length){
+        grid.innerHTML = `<div style="grid-column:1/-1;background:#fafbff;border:1px solid #eee;border-radius:18px;padding:16px;color:#6d7db0;font-weight:900;">
+          暂无内容。去社区点开帖子试试～
+        </div>`;
+        return;
+      }
+      list.forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'card-4';
+        el.onclick = ()=>openPost(p.id);
+        el.innerHTML = `
+          <div class="card-img" style="background-image:url('${p.images[0]}')"></div>
+          <div class="card-body">
+            <p style="font-size:14px;height:44px;overflow:hidden;font-weight:900;line-height:1.6;">${p.title}</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px;color:#888;font-weight:900;">
+              <span>@${p.user}</span><span>❤️ ${formatCount(p.like)} · ⭐ ${formatCount(p.fav)}</span>
+            </div>
+          </div>`;
+        grid.appendChild(el);
+      });
+    }
+
+    function renderCollections(){
+      const list = posts.filter(p=>!!p._faved);
+      renderCardGrid("collectionsGrid", list);
+    }
+    function renderShares(){
+      const list = posts.filter(p=>!!p._shared);
+      renderCardGrid("sharesGrid", list);
+    }
+    function renderHistory(){
+      const list = historyIds.map(id=>posts.find(p=>p.id===id)).filter(Boolean);
+      renderCardGrid("historyGrid", list);
+    }
+
+    /* ========= 私信 ========= */
+    function renderDMBadges(){
+      const unread = dmData.conversations.reduce((s,c)=>s+(c.unread||0),0);
+      const badge = document.getElementById("dmBadge");
+      badge.style.display = unread>0 ? "flex" : "none";
+      badge.textContent = unread>9 ? "9+" : String(unread);
+    }
+
+    function renderDMList(){
+      const box = document.getElementById("dmList");
+      box.innerHTML = "";
+      dmData.conversations.forEach(c=>{
+        const el = document.createElement("div");
+        el.className = "item";
+        el.onclick = ()=>openDMConversation(c.id);
+        el.innerHTML = `
+          <div class="mini-avatar">${c.name.replace("用户","U")}</div>
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;gap:10px;">
+              <b>${c.name}</b>
+              <span style="color:#6d7db0;font-weight:900;">${c.unread>0?("未读 "+c.unread):""}</span>
+            </div>
+            <div style="color:#6d7db0;font-weight:900;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${(c.messages[c.messages.length-1]||{}).text || "暂无消息"}
+            </div>
+          </div>
+        `;
+        box.appendChild(el);
+      });
+    }
+
+    function openDMConversation(id){
+      dmData.currentId = id;
+      const conv = dmData.conversations.find(x=>x.id===id);
+      if(!conv) return;
+
+      conv.unread = 0;
+      renderDMBadges();
+
+      document.getElementById("dmTitle").textContent = conv.name;
+      document.getElementById("dmSub").textContent = "单聊 · 文字演示";
+      const body = document.getElementById("dmBody");
+      body.innerHTML = "";
+      conv.messages.forEach(m=>{
+        const b = document.createElement("div");
+        b.className = "bubble " + (m.from==="me" ? "me" : "");
+        b.textContent = m.text;
+        body.appendChild(b);
+      });
+      body.scrollTop = body.scrollHeight;
+      saveState();
+    }
+
+    function sendDM(){
+      const input = document.getElementById("dmInput");
+      const text = (input.value||"").trim();
+      if(!text) return;
+      if(!dmData.currentId){
+        alert("请先选择一个会话");
+        return;
+      }
+      const conv = dmData.conversations.find(x=>x.id===dmData.currentId);
+      if(!conv) return;
+      conv.messages.push({from:"me", text});
+      input.value = "";
+      openDMConversation(conv.id);
+      saveState();
+    }
+
+    function mockNewDM(){
+      const name = "用户" + (Math.floor(Math.random()*8)+2);
+      const id = "dm" + (Date.now());
+      dmData.conversations.unshift({
+        id, name, unread:0, messages:[
+          {from:"other", text:"你好～想问下你那条改造的细节。"},
+          {from:"me", text:"可以呀，你具体想问哪一步？"}
+        ]
+      });
+      renderDMList();
+      openDMConversation(id);
+      saveState();
+    }
+
+    document.getElementById("dmInput").addEventListener("keydown", (e)=>{
+      if(e.key==="Enter") sendDM();
+    });
+
+    /* ========= 群聊 ========= */
+    function renderGroupBadges(){
+      const unread = groupData.groups.reduce((s,g)=>s+(g.unread||0),0);
+      const badge = document.getElementById("groupBadge");
+      badge.style.display = unread>0 ? "flex" : "none";
+      badge.textContent = unread>9 ? "9+" : String(unread);
+    }
+
+    function renderGroupList(){
+      const box = document.getElementById("groupList");
+      box.innerHTML = "";
+      groupData.groups.forEach(g=>{
+        const el = document.createElement("div");
+        el.className = "item";
+        el.onclick = ()=>openGroup(g.id);
+        el.innerHTML = `
+          <div class="mini-avatar">${g.name.slice(0,1)}</div>
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;gap:10px;">
+              <b>${g.name}</b>
+              <span style="color:#6d7db0;font-weight:900;">${g.unread>0?("未读 "+g.unread):""}</span>
+            </div>
+            <div style="color:#6d7db0;font-weight:900;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${(g.messages[g.messages.length-1]||{}).text || "暂无消息"}
+            </div>
+          </div>
+        `;
+        box.appendChild(el);
+      });
+    }
+
+    function openGroup(id){
+      groupData.currentId = id;
+      const g = groupData.groups.find(x=>x.id===id);
+      if(!g) return;
+
+      g.unread = 0;
+      renderGroupBadges();
+
+      document.getElementById("groupTitle").textContent = g.name;
+      document.getElementById("groupSub").textContent = `群聊 · ${g.members}人`;
+      const body = document.getElementById("groupBody");
+      body.innerHTML = "";
+      g.messages.forEach(m=>{
+        const b = document.createElement("div");
+        b.className = "bubble " + (m.from==="me" ? "me" : "");
+        b.textContent = (m.from==="me") ? m.text : `${m.name}：${m.text}`;
+        body.appendChild(b);
+      });
+      body.scrollTop = body.scrollHeight;
+      saveState();
+    }
+
+    function sendGroup(){
+      const input = document.getElementById("groupInput");
+      const text = (input.value||"").trim();
+      if(!text) return;
+      if(!groupData.currentId){
+        alert("请先选择一个群聊");
+        return;
+      }
+      const g = groupData.groups.find(x=>x.id===groupData.currentId);
+      if(!g) return;
+      g.messages.push({from:"me", name:"用户1", text});
+      input.value = "";
+      openGroup(g.id);
+      saveState();
+    }
+
+    function mockNewGroup(){
+      const namePool = ["旧衣改造打卡", "牛仔解构研究", "家居拼布分享", "宠物手作小队", "极简穿搭社"];
+      const name = namePool[Math.floor(Math.random()*namePool.length)] + "群";
+      const id = "g" + Date.now();
+      groupData.groups.unshift({
+        id, name, unread:0, members: Math.floor(Math.random()*200)+20,
+        messages:[
+          {from:"系统", name:"系统", text:"欢迎加入新群聊～"},
+          {from:"other", name:"用户2", text:"大家好！今天想分享一个小技巧。"},
+          {from:"me", name:"用户1", text:"欢迎～我也来分享我的改造经验。"}
+        ]
+      });
+      renderGroupList();
+      openGroup(id);
+      saveState();
+    }
+
+    document.getElementById("groupInput").addEventListener("keydown", (e)=>{
+      if(e.key==="Enter") sendGroup();
+    });
+
+    /* ========= 个人中心：统计 + 最近互动 + 会员 ========= */
+    function refreshProfile(){
+      document.getElementById('profileName').textContent = "@用户1";
+      document.getElementById('profileAvatar').textContent = "U";
+      renderVIP();
+      refreshProfileStats();
+      refreshRecent();
+      renderDMBadges();
+      renderGroupBadges();
+    }
+
+    function refreshProfileStats(){
+      const myName = "用户1";
+      const myPosts = posts.filter(p=>p.user===myName).length;
+      const myLikes = posts.reduce((s,p)=>s + (p._liked ? 1 : 0), 0);
+      const myFavs = posts.reduce((s,p)=>s + (p._faved ? 1 : 0), 0);
+      document.getElementById('statPosts').textContent = myPosts;
+      document.getElementById('statLikes').textContent = myLikes;
+      document.getElementById('statFavs').textContent = myFavs;
+    }
+
+    function refreshRecent(){
+      const list = document.getElementById('recentList');
+      const recent = [];
+
+      // 浏览历史
+      historyIds.slice(0,6).forEach(id=>{
+        const p = posts.find(x=>x.id===id);
+        if(p) recent.push({type:"浏览", title:p.title});
+      });
+
+      // 点赞/收藏
+      posts.forEach(p=>{
+        if(p._liked) recent.push({type:"点赞", title:p.title});
+        if(p._faved) recent.push({type:"收藏", title:p.title});
+        if(p._shared) recent.push({type:"转发", title:p.title});
+      });
+
+      // 评论（用户1写的）
+      posts.forEach(p=>{
+        (p.comments||[]).forEach(c=>{
+          if(c.user==="用户1") recent.push({type:"评论", title:p.title, extra:c.text});
+        });
+      });
+
+      const show = recent.slice(-10).reverse();
+      if(show.length===0){
+        list.innerHTML = `
+          <div style="margin-top:12px;background:#fafbff;border:1px solid #eee;border-radius:18px;padding:16px;color:#6d7db0;font-weight:900;">
+            还没有互动记录～去社区点开一条分享试试吧。
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = "";
+      show.forEach(item=>{
+        const el = document.createElement('div');
+        el.style.cssText = "margin-top:10px;background:#fafbff;border:1px solid #eee;border-radius:18px;padding:14px;";
+        el.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <b style="color:#2f4b8b;">${item.type}</b>
+            <span style="color:#6d7db0;font-weight:900;">${item.title}</span>
+          </div>
+          ${item.extra ? `<div style="margin-top:8px;color:#3a4f88;font-weight:900;line-height:1.7;">“${item.extra}”</div>` : ""}`;
+        list.appendChild(el);
+      });
+    }
+
+    function renderVIP(){
+      const vipPill = document.getElementById("vipPill");
+      const vipBtn = document.getElementById("vipBtn");
+      const rolePill = document.getElementById("rolePill");
+      if(isVIP){
+        vipPill.style.display = "inline-flex";
+        vipBtn.textContent = "已是会员";
+        rolePill.textContent = "👤 当前身份：会员用户";
+      }else{
+        vipPill.style.display = "none";
+        vipBtn.textContent = "升级会员";
+        rolePill.textContent = "👤 当前身份：普通用户";
+      }
+    }
+
+    function toggleVIP(){
+      isVIP = !isVIP;
+      renderVIP();
+      saveState();
+      alert(isVIP ? "已升级会员 ✅" : "已取消会员");
+    }
+
+    function mockLogout(){
+      alert("已退出（未接入真实登录）");
+      switchPage('home');
+    }
+
+    /* ========= 初始化：徽章/列表 ========= */
+    refreshProfile();
+
+    /* ========= 初次渲染私信/群聊列表（进入页面时也会刷新） ========= */
+    renderDMBadges();
+    renderGroupBadges();
+
+    /* ========= 默认：如果用户直接点击侧边按钮，页面会刷新对应内容 ========= */
+  </script>
+</body>
+</html>
